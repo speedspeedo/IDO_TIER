@@ -16,4 +16,4 @@
 # IDEs
 *.iml
 .idea
-.lock
+Cargo.lock
