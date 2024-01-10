@@ -423,7 +423,6 @@ fn buy_tokens(
 
         return Ok(Response::new().set_data(answer).add_submessage(sub_msg));
     }
-    // else ---> scrt tokens are in the contract itself.
     Ok(Response::new().set_data(answer))
 }
 

@@ -219,12 +219,12 @@ pub fn try_deposit(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Respons
         let next_tier_deposit: u128 = config.deposit_by_tier(next_tier);
 
         let expected_deposit_usd = next_tier_deposit.checked_sub(old_usd_deposit).unwrap();
-        let expected_deposit_scrt = orai_price_ocracle.orai_amount(expected_deposit_usd);
+        let expected_deposit_orai = orai_price_ocracle.orai_amount(expected_deposit_usd);
 
         let err_msg = format!(
             "You should deposit at least {} USD ({} ORAI)",
             expected_deposit_usd,
-            expected_deposit_scrt
+            expected_deposit_orai
         );
 
         return Err(ContractError::Std(StdError::generic_err(&err_msg)));
