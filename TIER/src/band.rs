@@ -1,8 +1,9 @@
 use crate::state::Config;
+use cosmwasm_std::Deps;
 use cosmwasm_std::DepsMut;
 use cosmwasm_std::StdResult;
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::{ Deserialize, Serialize };
 
 pub struct OraiPriceOracle {
     exchange_rate: u128,
@@ -33,9 +34,40 @@ impl OraiPriceOracle {
                 }],
             },
         };
-        let response: ExchangeRateResponse = deps
-            .querier
-            .query_wasm_smart(orai_swap_router_contract, &msg)?;
+        let response: ExchangeRateResponse = deps.querier.query_wasm_smart(
+            orai_swap_router_contract,
+            &msg
+        )?;
+        let exchange_rate = response.amount;
+
+        Ok(OraiPriceOracle { exchange_rate })
+    }
+
+    pub fn deps_new(deps: &Deps) -> StdResult<Self> {
+        let config = Config::load(deps.storage)?;
+        let orai_swap_router_contract = config.oraiswap_contract.orai_swap_router_contract;
+        let native_token = NativeToken::new("orai".to_string());
+        let offer_asset_info = OfferAssetInfo::new(native_token);
+        let usdt_contract_address = config.oraiswap_contract.usdt_contract;
+        let msg = SwapContractMessage {
+            simulate_swap_operations: SwapContractMessageContent {
+                offer_amount: 1000000,
+                operations: vec![Operation {
+                    orai_swap: OraiSwap {
+                        offer_asset_info: offer_asset_info,
+                        ask_asset_info: AskAssetInfo {
+                            token: UsdtContractAddr {
+                                contract_addr: usdt_contract_address,
+                            },
+                        },
+                    },
+                }],
+            },
+        };
+        let response: ExchangeRateResponse = deps.querier.query_wasm_smart(
+            orai_swap_router_contract,
+            &msg
+        )?;
         let exchange_rate = response.amount;
 
         Ok(OraiPriceOracle { exchange_rate })
